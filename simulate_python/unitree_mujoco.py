@@ -12,7 +12,8 @@ import config
 
 locker = threading.Lock()
 
-mj_model = mujoco.MjModel.from_xml_path(config.ROBOT_SCENE)
+#mj_model = mujoco.MjModel.from_xml_path(config.ROBOT_SCENE)
+mj_model = mujoco.MjModel.from_xml_path("../unitree_robots/go2_Oracle/scene.xml")
 mj_data = mujoco.MjData(mj_model)
 
 

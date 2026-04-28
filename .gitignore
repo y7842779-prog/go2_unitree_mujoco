@@ -4,3 +4,7 @@
 **/log/
 **/install/
 simulate/mujoco
+*.pt
+*.obj
+*.stl
+*.png
