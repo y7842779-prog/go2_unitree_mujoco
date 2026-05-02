@@ -7,7 +7,8 @@ from pynput import keyboard # <--- [新增 1/3] 导入键盘监听库
 import sys
 import termios
 import atexit
-
+import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
 # 获取当前终端的标准输入文件描述符
 fd = sys.stdin.fileno()
 # 保存终端当前的设置
@@ -152,6 +153,9 @@ print("=========================================")
 # 4. 主仿真循环
 # ==========================================
 print("[INFO] 启动可视化...")
+log_times = []
+log_rolls = []
+log_pitches = []
 with mujoco.viewer.launch_passive(model, data) as viewer:
     decimation = 10
     step_counter = 0
@@ -167,6 +171,16 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         if step_counter % decimation == 0:
             joint_pos_rel = qpos_isaac - DEFAULT_DOF_POS_ISAAC
             base_mat = data.xmat[base_body_id].reshape(3, 3)#提取机身的旋转矩阵（代表机身在世界中的倾斜和朝向）
+            # --- 新增：提取欧拉角并记录 (仅记录 1.5s 以后的平稳数据) ---
+            if sim_time > 1.5:
+                # 使用 scipy 将旋转矩阵转为欧拉角 (XYZ 顺序，对应 Roll, Pitch, Yaw)
+                r = R.from_matrix(base_mat)
+                euler_angles = r.as_euler('xyz', degrees=False) # 返回弧度
+                
+                log_times.append(sim_time)
+                log_rolls.append(euler_angles[0])   # Roll (翻滚角，绕X轴)
+                log_pitches.append(euler_angles[1]) # Pitch (俯仰角，绕Y轴)
+            # -----------------------------------------------------       
 
             base_lin_vel_world = data.qvel[0:3]#提取机身在世界坐标系下的绝对速度
             base_lin_vel = base_mat.T @ base_lin_vel_world# 乘以 base_mat.T（旋转矩阵的转置），就是把外界速度转换成狗自己感觉到的速度
@@ -288,3 +302,47 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
             step_dt = model.opt.timestep * decimation
             if elapsed < step_dt:
                 time.sleep(step_dt - elapsed)
+
+# ==========================================
+# 5. 仿真结束：数据分析与绘图
+# ==========================================
+if len(log_times) > 0:
+    print("\n[INFO] 正在计算躯干姿态方差并生成图表...")
+    
+    rolls_np = np.array(log_rolls)
+    pitches_np = np.array(log_pitches)
+    
+    # 计算方差 (Variance), 标准差 (Std Dev) 和 最大偏差 (Max Deviation)
+    roll_var = np.var(rolls_np)
+    pitch_var = np.var(pitches_np)
+    roll_std = np.std(rolls_np)
+    pitch_std = np.std(pitches_np)
+    roll_max = np.max(np.abs(rolls_np))
+    pitch_max = np.max(np.abs(pitches_np))
+    
+    print("================ 姿态抗扰动测试结果 ================")
+    print(f"Roll  (翻滚角) -> 方差: {roll_var:.6f} rad^2 | 标差: {roll_std:.4f} rad | 最大偏差: {roll_max:.4f} rad")
+    print(f"Pitch (俯仰角) -> 方差: {pitch_var:.6f} rad^2 | 标差: {pitch_std:.4f} rad | 最大偏差: {pitch_max:.4f} rad")
+    print("====================================================")
+    
+    # 绘制对比图
+    plt.figure(figsize=(10, 5))
+    plt.plot(log_times, rolls_np, label=f'Roll (Var: {roll_var:.4f})', color='blue', alpha=0.8)
+    plt.plot(log_times, pitches_np, label=f'Pitch (Var: {pitch_var:.4f})', color='red', alpha=0.8)
+    
+    # 添加 0 弧度基准线
+    plt.axhline(0, color='black', linestyle='--', linewidth=1)
+    
+    # 设置图表属性
+    plt.title('Go2 Base Orientation under Payload Disturbance (Oracle Policy)')
+    plt.xlabel('Simulation Time (s)')
+    plt.ylabel('Angle (rad)')
+    plt.legend()
+    plt.grid(True)
+    
+    # 保存并显示
+    plt.savefig('orientation_variance.png', dpi=300)
+    print("[INFO] 图表已保存为 orientation_variance.png")
+    plt.show()
+else:
+    print("[WARN] 运行时间太短 (不足1.5秒)，没有收集到足够的评估数据。")
