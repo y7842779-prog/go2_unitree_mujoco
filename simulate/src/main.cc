@@ -34,6 +34,7 @@
 #include "array_safety.h"
 #include "unitree_sdk2_bridge.h"
 #include "param.h"
+#include "pie_depth_writer.h"
 
 #define MUJOCO_PLUGIN_DIR "mujoco_plugin"
 #define NUM_MOTOR_IDL_GO 20
@@ -102,6 +103,7 @@ namespace
 
   // control noise variables
   mjtNum *ctrlnoise = nullptr;
+  pie_depth::PieDepthWriter pie_depth_writer;
 
   using Seconds = std::chrono::duration<double>;
 
@@ -518,6 +520,7 @@ namespace
             if (stepped)
             {
               sim.AddToHistory();
+              pie_depth_writer.Update(m, d);
             }
           }
 

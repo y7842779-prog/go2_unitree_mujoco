@@ -25,6 +25,9 @@ inline struct SimulationConfig
 
     int enable_elastic_band;
     int band_attached_link = 0;
+    int enable_pie_depth = 0;
+    std::string pie_depth_binary_path = "/tmp/pie_depth_60x86_float32.bin";
+    int pie_depth_update_steps = 50;
 
     void load_from_yaml(const std::string &filename)
     {
@@ -41,6 +44,15 @@ inline struct SimulationConfig
             joystick_bits = cfg["joystick_bits"].as<int>();
             print_scene_information = cfg["print_scene_information"].as<int>();
             enable_elastic_band = cfg["enable_elastic_band"].as<int>();
+            if (cfg["enable_pie_depth"]) {
+                enable_pie_depth = cfg["enable_pie_depth"].as<int>();
+            }
+            if (cfg["pie_depth_binary_path"]) {
+                pie_depth_binary_path = cfg["pie_depth_binary_path"].as<std::string>();
+            }
+            if (cfg["pie_depth_update_steps"]) {
+                pie_depth_update_steps = cfg["pie_depth_update_steps"].as<int>();
+            }
         }
         catch(const std::exception& e)
         {

@@ -12,3 +12,7 @@ joystick_bits: 16 # Some game controllers may only have 8-bit accuracy
 print_scene_information: 1 # Print link, joint and sensors information of robot
 
 enable_elastic_band: 0 # Virtual spring band, used for lifting h1
+
+enable_pie_depth: 1
+pie_depth_binary_path: "/tmp/pie_depth_60x86_float32.bin"
+pie_depth_update_steps: 50
