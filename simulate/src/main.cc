@@ -332,6 +332,9 @@ namespace
     // cpu-sim syncronization point
     std::chrono::time_point<mj::Simulate::Clock> syncCPU;
     mjtNum syncSim = 0;
+    auto realtime_log_wall = mj::Simulate::Clock::now();
+    mjtNum realtime_log_sim = 0;
+    mjData *realtime_log_data = nullptr;
 
     // ChannelFactory::Instance()->Init(0);
     // UnitreeDds ud(d);
@@ -530,6 +533,32 @@ namespace
             // run mj_forward, to update rendering and joint sliders
             mj_forward(m, d);
             sim.speed_changed = true;
+          }
+
+          const auto timing_now = mj::Simulate::Clock::now();
+          if (!sim.run || d != realtime_log_data || d->time < realtime_log_sim)
+          {
+            realtime_log_wall = timing_now;
+            realtime_log_sim = d->time;
+            realtime_log_data = d;
+          }
+          else
+          {
+            const double wall_seconds = Seconds(timing_now - realtime_log_wall).count();
+            if (wall_seconds >= 1.0)
+            {
+              const double sim_seconds = static_cast<double>(d->time - realtime_log_sim);
+              const double realtime_factor = sim_seconds / wall_seconds;
+              std::printf(
+                  "[SIM TIMING] realtime_factor=%.3f sim_dt=%.3fs wall_dt=%.3fs timestep=%.4fs\n",
+                  realtime_factor,
+                  sim_seconds,
+                  wall_seconds,
+                  m->opt.timestep);
+              std::fflush(stdout);
+              realtime_log_wall = timing_now;
+              realtime_log_sim = d->time;
+            }
           }
         }
       } // release std::lock_guard<std::mutex>
