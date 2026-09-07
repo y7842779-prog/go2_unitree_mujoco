@@ -28,7 +28,6 @@ inline struct SimulationConfig
     int enable_pie_depth = 0;
     std::string pie_depth_binary_path = "/tmp/pie_depth_60x86_float32.bin";
     int pie_depth_update_steps = 50;
-    int show_pie_depth = 0;
 
     void load_from_yaml(const std::string &filename)
     {
@@ -54,9 +53,6 @@ inline struct SimulationConfig
             if (cfg["pie_depth_update_steps"]) {
                 pie_depth_update_steps = cfg["pie_depth_update_steps"].as<int>();
             }
-            if (cfg["show_pie_depth"]) {
-                show_pie_depth = cfg["show_pie_depth"].as<int>();
-            }
         }
         catch(const std::exception& e)
         {
@@ -79,7 +75,6 @@ inline po::variables_map helper(int argc, char** argv)
         ("network,n", po::value<std::string>(&config.interface), "DDS network interface; -n eth0")
         ("robot,r", po::value<std::string>(&config.robot), "Robot type; -r go2")
         ("scene,s", po::value<std::filesystem::path>(&config.robot_scene), "Robot scene file; -s scene_terrain.xml")
-        ("show-depth", po::value<int>(&config.show_pie_depth)->implicit_value(1), "Show PIE depth camera overlay")
     ;
 
     po::variables_map vm;
@@ -90,10 +85,6 @@ inline po::variables_map helper(int argc, char** argv)
     {
         std::cout << desc << std::endl;
         exit(0);
-    }
-
-    if (config.show_pie_depth != 0) {
-        config.enable_pie_depth = 1;
     }
 
     return vm;

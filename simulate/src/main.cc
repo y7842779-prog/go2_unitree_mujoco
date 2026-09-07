@@ -17,9 +17,9 @@
 #include "glfw_adapter.h"
 #undef private
 
+#include <chrono>
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cstdint>
 #include <cmath>
 #include <cstdio>
@@ -108,99 +108,6 @@ namespace
   // control noise variables
   mjtNum *ctrlnoise = nullptr;
   pie_depth::PieDepthWriter pie_depth_writer;
-
-  class PieDepthOverlay
-  {
-  public:
-    void Render(const mjrRect& scene_rect, const mjrContext& context)
-    {
-      if (param::config.show_pie_depth == 0) {
-        return;
-      }
-
-      int source_width = 0;
-      int source_height = 0;
-      if (!pie_depth_writer.CopyLatestDepth(&depth_, &source_width, &source_height)) {
-        return;
-      }
-      if (source_width <= 0 || source_height <= 0 || scene_rect.width <= 0 || scene_rect.height <= 0) {
-        return;
-      }
-
-      const int available_width = scene_rect.width - 2 * kMargin;
-      const int available_height = scene_rect.height - 2 * kMargin;
-      if (available_width <= 0 || available_height <= 0) {
-        return;
-      }
-
-      int draw_width = std::min(kMaxDisplayWidth, available_width);
-      int draw_height = std::max(1, draw_width * source_height / source_width);
-      if (draw_height > available_height) {
-        draw_height = available_height;
-        draw_width = std::max(1, draw_height * source_width / source_height);
-      }
-
-      rgb_.assign(static_cast<std::size_t>(draw_width * draw_height * 3), 0);
-      for (int y = 0; y < draw_height; ++y) {
-        const int source_y = (draw_height - 1 - y) * source_height / draw_height;
-        for (int x = 0; x < draw_width; ++x) {
-          const int source_x = x * source_width / draw_width;
-          const float depth = depth_[source_y * source_width + source_x];
-          const auto color = DepthColor(depth);
-          const std::size_t index = static_cast<std::size_t>((y * draw_width + x) * 3);
-          rgb_[index + 0] = color[0];
-          rgb_[index + 1] = color[1];
-          rgb_[index + 2] = color[2];
-        }
-      }
-
-      const mjrRect image_rect = {
-        scene_rect.left + kMargin,
-        scene_rect.bottom + scene_rect.height - kMargin - draw_height,
-        draw_width,
-        draw_height
-      };
-      mjr_drawPixels(rgb_.data(), nullptr, image_rect, &context);
-    }
-
-  private:
-    static constexpr int kMargin = 20;
-    static constexpr int kMaxDisplayWidth = 360;
-
-    static std::array<unsigned char, 3> DepthColor(float normalized_depth)
-    {
-      if (!std::isfinite(normalized_depth)) {
-        normalized_depth = 1.0f;
-      }
-      const float heat = std::clamp(1.0f - normalized_depth, 0.0f, 1.0f);
-      constexpr std::array<std::array<float, 3>, 5> color_stops = {{
-        {0.03f, 0.04f, 0.18f},
-        {0.02f, 0.20f, 0.70f},
-        {0.00f, 0.75f, 0.95f},
-        {0.90f, 0.92f, 0.18f},
-        {1.00f, 0.45f, 0.05f},
-      }};
-
-      const float scaled = heat * static_cast<float>(color_stops.size() - 1);
-      const int index = std::min(
-          static_cast<int>(color_stops.size()) - 2,
-          std::max(0, static_cast<int>(std::floor(scaled))));
-      const float t = scaled - static_cast<float>(index);
-
-      std::array<unsigned char, 3> color = {};
-      for (int channel = 0; channel < 3; ++channel) {
-        const float value =
-            color_stops[index][channel] * (1.0f - t) + color_stops[index + 1][channel] * t;
-        color[channel] = static_cast<unsigned char>(std::clamp(value, 0.0f, 1.0f) * 255.0f + 0.5f);
-      }
-      return color;
-    }
-
-    std::vector<float> depth_;
-    std::vector<unsigned char> rgb_;
-  };
-
-  PieDepthOverlay pie_depth_overlay;
 
   using Seconds = std::chrono::duration<double>;
 
@@ -811,9 +718,6 @@ int main(int argc, char **argv)
   auto sim = std::make_unique<mj::Simulate>(
     std::make_unique<mj::GlfwAdapter>(),
     &cam, &opt, &pert, /* is_passive = */ false);
-  sim->render_overlay_callback = [](const mjrRect& rect, const mjrContext& context) {
-    pie_depth_overlay.Render(rect, context);
-  };
 
   std::thread unitree_thread(UnitreeSdk2BridgeThread, nullptr);
 
