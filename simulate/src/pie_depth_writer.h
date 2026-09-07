@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -44,7 +45,27 @@ public:
 
     RenderRawRayDepth(model, data);
     ProcessDepth();
+    PublishDisplayDepth();
     WriteDepthFile();
+  }
+
+  bool CopyLatestDepth(std::vector<float> *depth, int *width, int *height) const
+  {
+    if (depth == nullptr || width == nullptr || height == nullptr)
+    {
+      return false;
+    }
+
+    std::lock_guard<std::mutex> lock(display_mutex_);
+    if (!has_display_depth_)
+    {
+      return false;
+    }
+
+    *depth = display_depth_;
+    *width = kOutputWidth;
+    *height = kOutputHeight;
+    return true;
   }
 
 private:
@@ -73,6 +94,11 @@ private:
     raw_depth_.assign(kRawWidth * kRawHeight, kMaxDistance);
     processed_depth_.assign(kOutputWidth * kOutputHeight, 1.0f);
     warned_write_failure_ = false;
+    {
+      std::lock_guard<std::mutex> lock(display_mutex_);
+      display_depth_.clear();
+      has_display_depth_ = false;
+    }
 
     if (camera_id_ < 0)
     {
@@ -199,6 +225,13 @@ private:
     }
   }
 
+  void PublishDisplayDepth()
+  {
+    std::lock_guard<std::mutex> lock(display_mutex_);
+    display_depth_ = processed_depth_;
+    has_display_depth_ = true;
+  }
+
   void WarnWriteFailure(const std::string &message)
   {
     if (!warned_write_failure_)
@@ -215,6 +248,9 @@ private:
   bool warned_write_failure_ = false;
   std::vector<float> raw_depth_;
   std::vector<float> processed_depth_;
+  mutable std::mutex display_mutex_;
+  std::vector<float> display_depth_;
+  bool has_display_depth_ = false;
 };
 
 } // namespace pie_depth
