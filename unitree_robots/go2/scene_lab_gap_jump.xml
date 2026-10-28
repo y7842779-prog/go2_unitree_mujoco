@@ -1,0 +1,79 @@
+<mujoco model="go2 lab gap jump scene">
+  <include file="go2.xml"/>
+
+  <statistic center="3.0 0 0.25" extent="4.4"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <default>
+    <default class="parkour_grippy">
+      <geom condim="6" priority="2" friction="4.0 0.35 0.08" solref="0.004 1" solimp="0.95 0.99 0.001"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge"
+             rgb1="0.28 0.32 0.35" rgb2="0.18 0.22 0.25" markrgb="0.75 0.75 0.75"
+             width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.15"/>
+    <material name="lab_floor" rgba="0.74 0.74 0.70 1"/>
+    <material name="lab_block" rgba="0.82 0.82 0.78 1"/>
+    <material name="lab_wall" rgba="0.62 0.62 0.58 1"/>
+    <material name="lab_gap" rgba="0.05 0.05 0.05 1"/>
+    <material name="lab_edge" rgba="0.95 0.82 0.22 1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 2.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" class="parkour_grippy" type="plane" size="0 0 0.05" material="groundplane"/>
+
+    <!-- Lab-like straight lane. The robot starts on the default flat floor at x=0 and runs toward +x. -->
+    <geom name="approach_flat" class="parkour_grippy" type="box" pos="0.900 0.000 0.020"
+          size="0.520 0.620 0.020" material="lab_floor"/>
+    <geom name="approach_ramp" class="parkour_grippy" type="box" pos="1.600 0.000 0.085"
+          size="0.560 0.620 0.025" material="lab_floor" quat="0.996195 0 -0.087156 0"/>
+
+    <!-- Takeoff and landing platforms. Gap from x=2.42 to x=3.02 is about 0.60 m. -->
+    <geom name="takeoff_platform" class="parkour_grippy" type="box" pos="2.105 0.000 0.110"
+          size="0.315 0.620 0.110" material="lab_block"/>
+    <geom name="takeoff_edge_strip" type="box" pos="2.390 0.000 0.226"
+          size="0.020 0.635 0.006" material="lab_edge" contype="0" conaffinity="0"/>
+    <geom name="gap_low_floor" class="parkour_grippy" type="box" pos="2.720 0.000 0.010"
+          size="0.300 0.620 0.010" material="lab_gap"/>
+    <geom name="landing_edge_strip" type="box" pos="3.050 0.000 0.226"
+          size="0.020 0.635 0.006" material="lab_edge" contype="0" conaffinity="0"/>
+    <geom name="landing_platform" class="parkour_grippy" type="box" pos="3.420 0.000 0.110"
+          size="0.370 0.620 0.110" material="lab_block"/>
+
+    <!-- Exit area after the jump, kept broad so a successful landing has room to recover. -->
+    <geom name="exit_pad_low" class="parkour_grippy" type="box" pos="4.130 0.000 0.080"
+          size="0.340 0.620 0.080" material="lab_floor"/>
+    <geom name="exit_pad_flat" class="parkour_grippy" type="box" pos="4.900 0.000 0.040"
+          size="0.500 0.620 0.040" material="lab_floor"/>
+
+    <!-- Side walls mimic the IsaacLab visual corridor and make the depth camera see a clear gap boundary. -->
+    <geom name="left_side_wall" class="parkour_grippy" type="box" pos="2.900 0.840 0.280"
+          size="2.100 0.070 0.280" material="lab_wall"/>
+    <geom name="right_side_wall" class="parkour_grippy" type="box" pos="2.900 -0.840 0.280"
+          size="2.100 0.070 0.280" material="lab_wall"/>
+
+    <!-- Low rough-looking blocks outside the lane, visual only for the camera context. -->
+    <geom name="rough_left_01" class="parkour_grippy" type="box" pos="1.000 1.320 0.035"
+          size="0.260 0.180 0.035" material="lab_floor" quat="0.996195 0 0 0.087156"/>
+    <geom name="rough_left_02" class="parkour_grippy" type="box" pos="1.420 1.250 0.050"
+          size="0.240 0.210 0.050" material="lab_floor" quat="0.991445 0 0 -0.130526"/>
+    <geom name="rough_left_03" class="parkour_grippy" type="box" pos="3.400 1.300 0.045"
+          size="0.300 0.190 0.045" material="lab_floor" quat="0.984808 0 0 0.173648"/>
+    <geom name="rough_right_01" class="parkour_grippy" type="box" pos="1.200 -1.270 0.040"
+          size="0.280 0.170 0.040" material="lab_floor" quat="0.991445 0 0 0.130526"/>
+    <geom name="rough_right_02" class="parkour_grippy" type="box" pos="2.900 -1.320 0.055"
+          size="0.260 0.210 0.055" material="lab_floor" quat="0.996195 0 0 -0.087156"/>
+    <geom name="rough_right_03" class="parkour_grippy" type="box" pos="4.200 -1.240 0.040"
+          size="0.290 0.180 0.040" material="lab_floor" quat="0.984808 0 0 -0.173648"/>
+  </worldbody>
+</mujoco>

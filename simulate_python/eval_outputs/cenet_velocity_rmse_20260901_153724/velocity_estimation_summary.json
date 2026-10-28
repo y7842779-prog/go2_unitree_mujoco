@@ -1,0 +1,61 @@
+{
+  "xml_path": "/home/hyc/unitree_mujoco/unitree_robots/go2/scene_flat.xml",
+  "policy_path": "/home/hyc/unitree_rl_lab/scripts/rsl_rl/logs/rsl_rl/unitree_go2_dreamwaq_cenet/2026-07-26_18-34-42/exported/policy.pt",
+  "checkpoint_path": "/home/hyc/unitree_rl_lab/scripts/rsl_rl/logs/rsl_rl/unitree_go2_dreamwaq_cenet/2026-07-26_18-34-42/model_4999.pt",
+  "output_dir": "/home/hyc/unitree_mujoco/simulate_python/eval_outputs/cenet_velocity_rmse_20260901_153724",
+  "duration_s": 60.0,
+  "warmup_s": 2.0,
+  "command_interval_s": 10.0,
+  "command_low": [
+    -1.0,
+    -0.4000000059604645,
+    -1.0
+  ],
+  "command_high": [
+    1.0,
+    0.4000000059604645,
+    1.0
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "num_runs": 5,
+  "num_falls": 0,
+  "total_samples": 15000,
+  "overall": {
+    "rmse_3d": 0.10553516447544098,
+    "rmse_xy": 0.09808006137609482,
+    "rmse_vx": 0.0804331973195076,
+    "rmse_vy": 0.05612645298242569,
+    "rmse_vz": 0.03896116465330124,
+    "mae_vx": 0.04118732735514641,
+    "mae_vy": 0.043852321803569794,
+    "mae_vz": 0.02994711883366108
+  },
+  "run_mean_std": {
+    "rmse_3d": {
+      "mean": 0.10450867414474488,
+      "std": 0.01468358035240264
+    },
+    "rmse_xy": {
+      "mean": 0.09717331230640411,
+      "std": 0.013305820935596485
+    },
+    "rmse_vx": {
+      "mean": 0.07872143611311913,
+      "std": 0.016506524209947266
+    },
+    "rmse_vy": {
+      "mean": 0.05598283857107163,
+      "std": 0.004010782104158708
+    },
+    "rmse_vz": {
+      "mean": 0.03835124000906944,
+      "std": 0.006867003289173413
+    }
+  }
+}

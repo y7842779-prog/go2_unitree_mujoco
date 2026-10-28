@@ -1,0 +1,4 @@
+reference_controller,other_controller,metric_key,num_pairs,t_statistic,p_value_one_sided,reference_mean,other_mean
+DreamWaQ_AdaBoot,DreamWaQ_CENet,ate_vx,5,1.07995009,0.17046636,0.09324242,0.49271134
+DreamWaQ_AdaBoot,DreamWaQ_CENet,ate_vy,5,1.02773597,0.18107886,0.10628705,0.49061137
+DreamWaQ_AdaBoot,DreamWaQ_CENet,ate_yaw,5,1.11293053,0.16405448,0.08910400,0.50161526

@@ -1,0 +1,70 @@
+<mujoco model="go2 scene">
+  <include file="go2.xml" />
+
+  <statistic center="0 0 0.1" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="-130" elevation="-20" />
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+  <hfield name="perlin_hfield" size="1.0 0.75 0.2 0.2" file="../height_field.png" /><hfield name="image_hfield" size="1.0 1.0 0.02 0.1" file="../unitree_hfield.png" /></asset>
+
+  <worldbody>
+    <light pos="0 0 2.2" dir="0 0 -1" directional="true" />
+    <light pos="4.0 1.0 2.0" dir="-1 -1 -1" directional="false" diffuse="0.5 0.5 0.5" />
+
+    <!-- ===================================================== -->
+    <!-- Scene C: 卧室杂乱型家居递送场景                         -->
+    <!-- 特点：床占据中心、床边窄缝、药盒/书本/拖鞋多，目标在侧边 -->
+    <!-- 用途：验证策略在杂乱卧室目标递送和窄缝通行下的鲁棒性     -->
+    <!-- ===================================================== -->
+
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" friction="0.90 0.01 0.001" />
+
+    <!-- 卧室墙体，与走廊/客厅布局明显不同 -->
+    <geom name="bedroom_wall_back" type="box" pos="3.20 1.85 0.48" size="3.20 0.05 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+    <geom name="bedroom_wall_left" type="box" pos="0.00 0.10 0.48" size="0.05 1.75 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+    <geom name="bedroom_wall_right" type="box" pos="5.85 0.10 0.48" size="0.05 1.75 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+
+    <!-- 入口门槛偏左，路线要绕过床 -->
+    <geom name="threshold_C" type="box" pos="1.05 -0.45 0.025" size="0.58 0.06 0.025" rgba="0.55 0.35 0.18 1" friction="0.95 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="small_rug_C" type="box" pos="1.85 -0.65 0.012" size="0.65 0.42 0.012" rgba="0.44 0.58 0.45 1" friction="1.22 0.03 0.003" contype="1" conaffinity="1" />
+
+    <!-- 中央大床，制造明显窄缝通行 -->
+    <geom name="bed_C" type="box" pos="3.05 0.65 0.30" size="1.10 0.78 0.30" rgba="0.60 0.50 0.42 1" contype="1" conaffinity="1" />
+    <geom name="mattress_C" type="box" pos="3.05 0.65 0.64" size="1.05 0.73 0.06" rgba="0.86 0.86 0.80 1" contype="1" conaffinity="1" />
+    <geom name="pillow_C1" type="box" pos="2.55 1.05 0.74" size="0.25 0.17 0.06" rgba="0.95 0.95 0.90 1" contype="1" conaffinity="1" />
+    <geom name="pillow_C2" type="box" pos="3.20 1.05 0.74" size="0.25 0.17 0.06" rgba="0.95 0.95 0.90 1" contype="1" conaffinity="1" />
+
+    <!-- 床边窄通道障碍 -->
+    <geom name="nightstand_C" type="box" pos="4.55 0.95 0.35" size="0.30 0.28 0.35" rgba="0.50 0.42 0.35 1" contype="1" conaffinity="1" />
+    <geom name="wardrobe_C" type="box" pos="4.85 -0.85 0.70" size="0.45 0.24 0.70" rgba="0.48 0.34 0.22 1" contype="1" conaffinity="1" />
+    <geom name="chair_C" type="box" pos="1.85 1.25 0.25" size="0.28 0.24 0.25" rgba="0.45 0.35 0.28 1" contype="1" conaffinity="1" />
+
+    <!-- 杂乱物品更多，分布与 A/B 完全不同 -->
+    <geom name="slipper_C1" type="box" pos="1.55 0.30 0.030" euler="0 0 0.5" size="0.22 0.08 0.030" rgba="0.85 0.65 0.35 1" friction="0.80 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="slipper_C2" type="box" pos="4.00 -0.35 0.030" euler="0 0 -0.45" size="0.22 0.08 0.030" rgba="0.85 0.65 0.35 1" friction="0.80 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="medicine_box_C" type="box" pos="4.35 0.45 0.065" euler="0 0 0.2" size="0.18 0.11 0.065" rgba="0.95 0.95 0.95 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="book_C1" type="box" pos="2.20 -1.05 0.050" euler="0 0 -0.2" size="0.30 0.19 0.050" rgba="0.40 0.40 0.75 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="toy_C1" type="box" pos="3.95 -1.10 0.075" euler="0 0 0.35" size="0.12 0.12 0.075" rgba="0.90 0.45 0.35 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+
+    <!-- 目标点：床头柜上方 -->
+    <geom name="target_C" type="cylinder" pos="4.55 0.95 0.72" size="0.14 0.02" rgba="0.20 0.80 0.25 1" contype="0" conaffinity="0" />
+    <geom name="cup_C" type="cylinder" pos="4.55 0.95 0.82" size="0.050 0.09" rgba="0.25 0.55 0.95 0.55" contype="0" conaffinity="0" />
+    <geom name="pill_C" type="box" pos="4.38 0.95 0.78" size="0.08 0.05 0.035" rgba="0.95 0.95 0.95 1" contype="0" conaffinity="0" />
+
+    <!-- 宠物占位 -->
+    <geom name="pet_C" type="cylinder" pos="2.15 -0.35 0.15" size="0.16 0.15" rgba="0.95 0.45 0.35 1" friction="0.60 0.02 0.001" contype="1" conaffinity="1" />
+
+    <site name="start_C" pos="0.00 0.00 0.05" size="0.08" rgba="0.20 0.40 1.00 1" />
+    <site name="mid_C1" pos="1.05 -0.45 0.05" size="0.06" rgba="1.00 0.80 0.20 1" />
+    <site name="mid_C2" pos="3.85 -0.55 0.05" size="0.06" rgba="1.00 0.80 0.20 1" />
+    <site name="goal_C" pos="4.55 0.95 0.08" size="0.10" rgba="0.20 1.00 0.20 1" />
+  </worldbody>
+</mujoco>

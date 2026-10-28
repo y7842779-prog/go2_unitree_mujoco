@@ -1,0 +1,270 @@
+<mujoco model="go2 scene">
+  <include file="go2.xml" />
+
+  <statistic center="0 0 0.1" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="-130" elevation="-20" />
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+  <hfield name="perlin_hfield" size="1.0 0.75 0.2 0.2" file="../height_field.png" /><hfield name="image_hfield" size="1.0 1.0 0.02 0.1" file="../unitree_hfield.png" /></asset>
+
+  <worldbody>
+    <light pos="0 0 2.2" dir="0 0 -1" directional="true" />
+    <light pos="3.5 -1.5 2.0" dir="-1 0 -1" directional="false" diffuse="0.5 0.5 0.5" />
+
+    <!-- ===================================================== -->
+    <!-- Complex Home Delivery Scene: 复杂家居递送场景          -->
+    <!-- 只修改场景地图，不修改 Go2 机器狗模型和 payload_ball    -->
+    <!-- 设计目标：门槛、地毯、窄通道、床边目标、散落物、家具绕行 -->
+    <!-- ===================================================== -->
+
+    <!-- 基础地面：保留 name="floor"，避免脚本依赖失效 -->
+    <geom name="floor"
+          size="0 0 0.05"
+          type="plane"
+          material="groundplane"
+          friction="0.90 0.01 0.001" />
+
+    <!-- ===================== 房间墙体：避开出生点 ===================== -->
+    <!-- Go2 默认出生在 (0,0)，墙体全部放到两侧和远端 -->
+    <geom name="home_wall_left"
+          type="box"
+          pos="2.70 1.75 0.48"
+          size="2.70 0.05 0.48"
+          rgba="0.82 0.82 0.78 1"
+          contype="1" conaffinity="1" />
+    <geom name="home_wall_right"
+          type="box"
+          pos="2.70 -1.75 0.48"
+          size="2.70 0.05 0.48"
+          rgba="0.82 0.82 0.78 1"
+          contype="1" conaffinity="1" />
+    <geom name="home_wall_back"
+          type="box"
+          pos="5.40 0.00 0.48"
+          size="0.05 1.75 0.48"
+          rgba="0.82 0.82 0.78 1"
+          contype="1" conaffinity="1" />
+
+    <!-- 半开门/门框：形成居家入口视觉，不挡出生点 -->
+    <geom name="door_frame_left"
+          type="box"
+          pos="0.85 1.18 0.55"
+          size="0.06 0.12 0.55"
+          rgba="0.55 0.40 0.25 1"
+          contype="1" conaffinity="1" />
+    <geom name="door_frame_right"
+          type="box"
+          pos="0.85 -1.18 0.55"
+          size="0.06 0.12 0.55"
+          rgba="0.55 0.40 0.25 1"
+          contype="1" conaffinity="1" />
+    <geom name="half_open_door"
+          type="box"
+          pos="0.95 -1.05 0.48"
+          euler="0 0 0.45"
+          size="0.55 0.035 0.48"
+          rgba="0.62 0.43 0.24 1"
+          contype="1" conaffinity="1" />
+
+    <!-- ===================== 下层运动控制挑战区 ===================== -->
+    <!-- 门槛：2.5cm，稳定后可改为 0.035 或 0.045 -->
+    <geom name="home_door_threshold"
+          type="box"
+          pos="1.20 0.00 0.025"
+          size="0.85 0.08 0.025"
+          rgba="0.55 0.35 0.18 1"
+          friction="0.95 0.02 0.001"
+          contype="1" conaffinity="1" />
+
+    <!-- 地毯：高摩擦软地面 -->
+    <geom name="home_carpet"
+          type="box"
+          pos="2.10 0.00 0.012"
+          size="0.95 0.70 0.012"
+          rgba="0.45 0.62 0.58 1"
+          friction="1.25 0.03 0.003"
+          contype="1" conaffinity="1" />
+
+    <!-- 地毯边缘卷起：轻微凸起，不宜太高 -->
+    <geom name="carpet_edge_roll"
+          type="cylinder"
+          pos="1.42 -0.72 0.035"
+          euler="1.5708 0 0"
+          size="0.035 0.55"
+          rgba="0.38 0.55 0.51 1"
+          friction="1.20 0.03 0.003"
+          contype="1" conaffinity="1" />
+
+    <!-- 低矮过线：模拟充电线/电源线，考察足端适应 -->
+    <geom name="charging_cable"
+          type="capsule"
+          pos="2.75 0.05 0.018"
+          euler="1.5708 0 0.15"
+          size="0.018 0.62"
+          rgba="0.05 0.05 0.05 1"
+          friction="0.70 0.02 0.001"
+          contype="1" conaffinity="1" />
+
+    <!-- ===================== 散落生活物品：主要放在路径两侧 ===================== -->
+    <geom name="home_slipper_left"
+          type="box"
+          pos="1.75 0.82 0.030"
+          euler="0 0 0.45"
+          size="0.22 0.08 0.030"
+          rgba="0.85 0.65 0.35 1"
+          friction="0.80 0.02 0.001"
+          contype="1" conaffinity="1" />
+    <geom name="home_slipper_right"
+          type="box"
+          pos="2.95 -0.82 0.030"
+          euler="0 0 -0.35"
+          size="0.22 0.08 0.030"
+          rgba="0.85 0.65 0.35 1"
+          friction="0.80 0.02 0.001"
+          contype="1" conaffinity="1" />
+    <geom name="toy_block_1"
+          type="box"
+          pos="3.25 0.55 0.075"
+          euler="0 0 0.25"
+          size="0.12 0.12 0.075"
+          rgba="0.90 0.45 0.35 1"
+          friction="0.75 0.02 0.001"
+          contype="1" conaffinity="1" />
+    <geom name="toy_block_2"
+          type="box"
+          pos="3.55 -0.95 0.065"
+          euler="0 0 -0.35"
+          size="0.11 0.10 0.065"
+          rgba="0.30 0.50 0.90 1"
+          friction="0.75 0.02 0.001"
+          contype="1" conaffinity="1" />
+    <geom name="book_stack"
+          type="box"
+          pos="2.45 1.05 0.050"
+          euler="0 0 -0.25"
+          size="0.30 0.20 0.050"
+          rgba="0.40 0.40 0.75 1"
+          friction="0.75 0.02 0.001"
+          contype="1" conaffinity="1" />
+    <geom name="medicine_box"
+          type="box"
+          pos="3.80 0.85 0.070"
+          euler="0 0 0.1"
+          size="0.18 0.12 0.070"
+          rgba="0.90 0.90 0.95 1"
+          friction="0.80 0.02 0.001"
+          contype="1" conaffinity="1" />
+
+    <!-- 圆柱障碍物：模拟垃圾桶/小凳脚，占位放侧边 -->
+    <geom name="trash_bin"
+          type="cylinder"
+          pos="1.55 -1.10 0.22"
+          size="0.18 0.22"
+          rgba="0.35 0.35 0.35 1"
+          friction="0.70 0.02 0.001"
+          contype="1" conaffinity="1" />
+
+    <!-- ===================== 家具布局：沙发/茶几/床边目标 ===================== -->
+    <geom name="sofa_base"
+          type="box"
+          pos="2.25 1.25 0.22"
+          size="0.70 0.28 0.22"
+          rgba="0.45 0.40 0.36 1"
+          contype="1" conaffinity="1" />
+    <geom name="sofa_back"
+          type="box"
+          pos="2.25 1.53 0.52"
+          size="0.72 0.08 0.32"
+          rgba="0.42 0.37 0.34 1"
+          contype="1" conaffinity="1" />
+    <geom name="coffee_table"
+          type="box"
+          pos="3.30 1.20 0.18"
+          size="0.42 0.25 0.18"
+          rgba="0.50 0.42 0.35 1"
+          contype="1" conaffinity="1" />
+
+    <!-- 老人床 -->
+    <geom name="home_bed"
+          type="box"
+          pos="4.45 0.85 0.28"
+          size="0.90 0.62 0.28"
+          rgba="0.60 0.50 0.42 1"
+          contype="1" conaffinity="1" />
+    <geom name="home_mattress"
+          type="box"
+          pos="4.45 0.85 0.60"
+          size="0.86 0.58 0.06"
+          rgba="0.86 0.86 0.80 1"
+          contype="1" conaffinity="1" />
+    <geom name="home_pillow"
+          type="box"
+          pos="4.00 1.18 0.70"
+          size="0.28 0.18 0.06"
+          rgba="0.95 0.95 0.90 1"
+          contype="1" conaffinity="1" />
+
+    <!-- 床头柜 -->
+    <geom name="home_bedside_table"
+          type="box"
+          pos="4.05 -0.88 0.35"
+          size="0.32 0.32 0.35"
+          rgba="0.50 0.42 0.35 1"
+          contype="1" conaffinity="1" />
+
+    <!-- 绿色递送目标点：视觉标记，不参与碰撞 -->
+    <geom name="home_delivery_target"
+          type="cylinder"
+          pos="4.05 -0.88 0.73"
+          size="0.16 0.02"
+          rgba="0.20 0.80 0.25 1"
+          contype="0" conaffinity="0" />
+    <geom name="home_visual_cup"
+          type="cylinder"
+          pos="4.05 -0.88 0.83"
+          size="0.055 0.10"
+          rgba="0.25 0.55 0.95 0.55"
+          contype="0" conaffinity="0" />
+    <geom name="home_visual_medicine"
+          type="box"
+          pos="3.88 -0.88 0.78"
+          size="0.08 0.05 0.035"
+          rgba="0.95 0.95 0.95 1"
+          contype="0" conaffinity="0" />
+
+    <!-- ===================== 宠物/家人障碍物占位：不加 joint，避免 qvel 索引变化 ===================== -->
+    <geom name="home_pet_obstacle"
+          type="cylinder"
+          pos="3.35 -1.20 0.16"
+          size="0.18 0.16"
+          rgba="0.95 0.45 0.35 1"
+          friction="0.60 0.02 0.001"
+          contype="1" conaffinity="1" />
+
+    <!-- ===================== 可视化路线标记：不参与碰撞 ===================== -->
+    <site name="home_start_site"
+          pos="0.00 0.00 0.05"
+          size="0.08"
+          rgba="0.20 0.40 1.00 1" />
+    <site name="home_mid_site_1"
+          pos="1.20 0.00 0.05"
+          size="0.06"
+          rgba="1.00 0.80 0.20 1" />
+    <site name="home_mid_site_2"
+          pos="2.20 0.00 0.05"
+          size="0.06"
+          rgba="1.00 0.80 0.20 1" />
+    <site name="home_goal_site"
+          pos="4.05 -0.88 0.08"
+          size="0.10"
+          rgba="0.20 1.00 0.20 1" />
+  </worldbody>
+</mujoco>

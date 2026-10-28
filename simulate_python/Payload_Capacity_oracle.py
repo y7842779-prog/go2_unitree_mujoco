@@ -29,7 +29,7 @@ termios.tcsetattr(fd, termios.TCSADRAIN, new_settings)
 # 1. 全局配置、路径与映射钥匙
 # ==========================================
 XML_PATH = "../unitree_robots/go2_Oracle/scene.xml"
-POLICY_PATH = "models_oracle/policy.pt"
+POLICY_PATH = "models_oracle/policy1.pt"
 TEST_TARGET_VX = 1.0  # 测试目标速度
 ACTION_SCALE = 0.25
 KP = 25.0

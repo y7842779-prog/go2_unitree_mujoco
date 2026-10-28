@@ -1,0 +1,4 @@
+reference_controller,other_controller,metric_key,num_pairs,t_statistic,p_value_one_sided,reference_mean,other_mean
+PolicyPPO,DreamWaQ_CENet,ate_vx,5,-239.28160102,1.00000000,1.97426052,0.05810637
+PolicyPPO,DreamWaQ_CENet,ate_vy,5,-235.29487343,1.00000000,1.97294450,0.09371553
+PolicyPPO,DreamWaQ_CENet,ate_yaw,5,-367.07223826,1.00000000,1.98382750,0.09009107

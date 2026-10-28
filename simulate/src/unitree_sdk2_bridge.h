@@ -9,7 +9,10 @@
 #include <unitree/idl/hg/BmsState_.hpp>
 #include <unitree/idl/hg/IMUState_.hpp>
 
+#include <algorithm>
+#include <array>
 #include <iostream>
+#include <type_traits>
 
 #include "param.h"
 #include "physics_joystick.h"
@@ -87,8 +90,24 @@ protected:
     int secondary_imu_quat_adr_ = -1;
     int secondary_imu_gyro_adr_ = -1;
     int secondary_imu_acc_adr_ = -1;
+    std::array<int, 4> foot_geom_ids_ = {-1, -1, -1, -1};
 
     std::shared_ptr<unitree::common::UnitreeJoystick> joystick = nullptr;
+
+    std::array<int16_t, 4> compute_foot_forces()
+    {
+        std::array<int16_t, 4> forces = {0, 0, 0, 0};
+        for (int contact_idx = 0; contact_idx < mj_data_->ncon; ++contact_idx) {
+            const auto& contact = mj_data_->contact[contact_idx];
+            for (int foot_idx = 0; foot_idx < 4; ++foot_idx) {
+                const int foot_geom_id = foot_geom_ids_[foot_idx];
+                if (foot_geom_id >= 0 && (contact.geom1 == foot_geom_id || contact.geom2 == foot_geom_id)) {
+                    forces[foot_idx] = 10;
+                }
+            }
+        }
+        return forces;
+    }
 
     void _check_sensor()
     {
@@ -144,6 +163,12 @@ protected:
         sensor_id = mj_name2id(mj_model_, mjOBJ_SENSOR, "secondary_imu_acc");
         if (sensor_id >= 0) {
             secondary_imu_acc_adr_ = mj_model_->sensor_adr[sensor_id];
+        }
+
+        // Unitree Go2 lowstate foot order is FR, FL, RR, RL.
+        const std::array<const char*, 4> foot_geom_names = {"FR", "FL", "RR", "RL"};
+        for (int i = 0; i < 4; ++i) {
+            foot_geom_ids_[i] = mj_name2id(mj_model_, mjOBJ_GEOM, foot_geom_names[i]);
         }
     }
 };
@@ -220,6 +245,14 @@ public:
                 lowstate->msg_.imu_state().accelerometer()[0] = mj_data_->sensordata[imu_acc_adr_ + 0];
                 lowstate->msg_.imu_state().accelerometer()[1] = mj_data_->sensordata[imu_acc_adr_ + 1];
                 lowstate->msg_.imu_state().accelerometer()[2] = mj_data_->sensordata[imu_acc_adr_ + 2];
+            }
+
+            if constexpr (std::is_same_v<LowState_t, unitree::robot::go2::publisher::LowState>) {
+                const auto foot_forces = compute_foot_forces();
+                for (int i = 0; i < 4; ++i) {
+                    lowstate->msg_.foot_force()[i] = foot_forces[i];
+                    lowstate->msg_.foot_force_est()[i] = foot_forces[i];
+                }
             }
             
             lowstate->msg_.tick() = std::round(mj_data_->time / 1e-3);

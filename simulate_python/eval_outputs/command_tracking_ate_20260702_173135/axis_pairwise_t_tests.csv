@@ -1,0 +1,7 @@
+reference_controller,other_controller,metric_key,num_pairs,t_statistic,p_value_one_sided,reference_mean,other_mean
+PolicyPPO,DreamWaQ_AdaBoot,ate_vx,5,-8.33209037,0.99943309,1.54277267,0.09324242
+PolicyPPO,DreamWaQ_CENet,ate_vx,5,-3.38730839,0.98620076,1.54277267,0.49271134
+PolicyPPO,DreamWaQ_AdaBoot,ate_vy,5,-8.27284439,0.99941744,1.54781654,0.10628705
+PolicyPPO,DreamWaQ_CENet,ate_vy,5,-3.40580391,0.98643403,1.54781654,0.49061137
+PolicyPPO,DreamWaQ_AdaBoot,ate_yaw,5,-8.75115157,0.99953014,1.56261942,0.08910400
+PolicyPPO,DreamWaQ_CENet,ate_yaw,5,-3.43855469,0.98683573,1.56261942,0.50161526

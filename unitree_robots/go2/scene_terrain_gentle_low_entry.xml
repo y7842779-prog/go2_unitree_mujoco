@@ -6,19 +6,10 @@
     <rgba haze="0.15 0.25 0.35 1"/>
     <global azimuth="-130" elevation="-20"/>
   </visual>
-  <default>
-    <default class="parkour_grippy">
-      <geom condim="6" priority="2" friction="4.0 0.35 0.08" solref="0.004 1" solimp="0.95 0.99 0.001"/>
-    </default>
-  </default>
   <asset>
     <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
-    <material name="lab_wood" rgba="0.78 0.55 0.24 1"/>
-    <material name="lab_rubber" rgba="0.04 0.05 0.05 1"/>
-    <material name="lab_black" rgba="0.03 0.03 0.03 1"/>
-    <material name="lab_edge" rgba="0.95 0.82 0.22 1"/>
     <!-- Lower rough terrain: about 0-0.05 m visible above the floor at the boundary -->
     <hfield name="perlin_hfield" size="1.0 0.75 0.07 0.01" file="../height_field.png"/>
     <hfield name="image_hfield" size="1.0 1.0 0.02 0.01" file="../unitree_hfield.png"/>
@@ -26,62 +17,23 @@
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
-
-
-
-
-
-
-    <!-- Legacy center obstacle moved aside so the new jump-board lane is clear. -->
-    <geom name="legacy_side_block" pos="1.5 -3.2 0.1" type="box" size="0.5 0.75 0.1" quat="1.0 0.0 0.0 0.0"/>
-    <geom name="legacy_side_cylinder" pos="1.5 -3.2 0.25" type="cylinder" size="0.5 0.25 0.25" quat="1.0 0.0 0.0 0.0"/>
-    <!-- Single low rectangular test block: same footprint/height as the left platform, no second layer. -->
-    <geom name="test_block_low_rect" type="box" pos="3.000 -1.600 0.100" size="0.500 0.750 0.100" quat="1 0 0 0" rgba="0.85 0.20 0.15 1"/>
-    <geom name="test_block_mid_rect" type="box" pos="6.000 -1.600 0.150" size="0.500 0.750 0.150" quat="1 0 0 0" rgba="0.95 0.45 0.12 1"/>
-    <geom name="test_block_high_rect" type="box" pos="9.000 -1.600 0.200" size="0.500 0.750 0.200" quat="1 0 0 0" rgba="0.95 0.68 0.15 1"/>
+    <geom pos="1.5 0.0 0.1" type="box" size="0.5 0.75 0.1" quat="1.0 0.0 0.0 0.0"/>
+    <geom pos="1.5 0.0 0.25" type="cylinder" size="0.5 0.25 0.25" quat="1.0 0.0 0.0 0.0"/>
     <!-- Gentle ramp: angle=12.0 deg, length=3.60 m, 0.02 m total thickness; entry lip≈0.02 m -->
     <geom pos="2.0 2.0 0.384023" type="box" size="1.800 0.750 0.010" quat="0.994521895 0 -0.104528463 0" name="gentle_ramp"/>
-    <!-- Gentle staircase moved directly in front of Go2 spawn: centerline y=0, first edge x=1.00 m; 12 steps, tread=0.24 m, rise=0.08 m -->
-    <geom name="gentle_stair_01" type="box" pos="1.120 0.000 0.040" size="0.120 0.750 0.040" quat="1 0 0 0"/>
-    <geom name="gentle_stair_02" type="box" pos="1.360 0.000 0.080" size="0.120 0.750 0.080" quat="1 0 0 0"/>
-    <geom name="gentle_stair_03" type="box" pos="1.600 0.000 0.120" size="0.120 0.750 0.120" quat="1 0 0 0"/>
-    <geom name="gentle_stair_04" type="box" pos="1.840 0.000 0.160" size="0.120 0.750 0.160" quat="1 0 0 0"/>
-    <geom name="gentle_stair_05" type="box" pos="2.080 0.000 0.200" size="0.120 0.750 0.200" quat="1 0 0 0"/>
-    <geom name="gentle_stair_06" type="box" pos="2.320 0.000 0.240" size="0.120 0.750 0.240" quat="1 0 0 0"/>
-    <geom name="gentle_stair_07" type="box" pos="2.560 0.000 0.280" size="0.120 0.750 0.280" quat="1 0 0 0"/>
-    <geom name="gentle_stair_08" type="box" pos="2.800 0.000 0.320" size="0.120 0.750 0.320" quat="1 0 0 0"/>
-    <geom name="gentle_stair_09" type="box" pos="3.040 0.000 0.360" size="0.120 0.750 0.360" quat="1 0 0 0"/>
-    <geom name="gentle_stair_10" type="box" pos="3.280 0.000 0.400" size="0.120 0.750 0.400" quat="1 0 0 0"/>
-    <geom name="gentle_stair_11" type="box" pos="3.520 0.000 0.440" size="0.120 0.750 0.440" quat="1 0 0 0"/>
-    <geom name="gentle_stair_12" type="box" pos="3.760 0.000 0.480" size="0.120 0.750 0.480" quat="1 0 0 0"/>
-
-    <!-- Adjacent staircase: 12 steps, 0.10 m rise and 0.24 m tread per step. -->
-    <geom name="higher_stair_01" type="box" pos="0.720 5.700 0.050" size="0.120 0.750 0.050" quat="1 0 0 0"/>
-    <geom name="higher_stair_02" type="box" pos="0.960 5.700 0.100" size="0.120 0.750 0.100" quat="1 0 0 0"/>
-    <geom name="higher_stair_03" type="box" pos="1.200 5.700 0.150" size="0.120 0.750 0.150" quat="1 0 0 0"/>
-    <geom name="higher_stair_04" type="box" pos="1.440 5.700 0.200" size="0.120 0.750 0.200" quat="1 0 0 0"/>
-    <geom name="higher_stair_05" type="box" pos="1.680 5.700 0.250" size="0.120 0.750 0.250" quat="1 0 0 0"/>
-    <geom name="higher_stair_06" type="box" pos="1.920 5.700 0.300" size="0.120 0.750 0.300" quat="1 0 0 0"/>
-    <geom name="higher_stair_07" type="box" pos="2.160 5.700 0.350" size="0.120 0.750 0.350" quat="1 0 0 0"/>
-    <geom name="higher_stair_08" type="box" pos="2.400 5.700 0.400" size="0.120 0.750 0.400" quat="1 0 0 0"/>
-    <geom name="higher_stair_09" type="box" pos="2.640 5.700 0.450" size="0.120 0.750 0.450" quat="1 0 0 0"/>
-    <geom name="higher_stair_10" type="box" pos="2.880 5.700 0.500" size="0.120 0.750 0.500" quat="1 0 0 0"/>
-    <geom name="higher_stair_11" type="box" pos="3.120 5.700 0.550" size="0.120 0.750 0.550" quat="1 0 0 0"/>
-    <geom name="higher_stair_12" type="box" pos="3.360 5.700 0.600" size="0.120 0.750 0.600" quat="1 0 0 0"/>
-
-    <!-- Lower staircase: 12 steps, tread=0.24 m, rise=0.06 m, total height=0.72 m. -->
-    <geom name="lower_stair_01" type="box" pos="0.720 7.400 0.030" size="0.120 0.750 0.030" quat="1 0 0 0"/>
-    <geom name="lower_stair_02" type="box" pos="0.960 7.400 0.060" size="0.120 0.750 0.060" quat="1 0 0 0"/>
-    <geom name="lower_stair_03" type="box" pos="1.200 7.400 0.090" size="0.120 0.750 0.090" quat="1 0 0 0"/>
-    <geom name="lower_stair_04" type="box" pos="1.440 7.400 0.120" size="0.120 0.750 0.120" quat="1 0 0 0"/>
-    <geom name="lower_stair_05" type="box" pos="1.680 7.400 0.150" size="0.120 0.750 0.150" quat="1 0 0 0"/>
-    <geom name="lower_stair_06" type="box" pos="1.920 7.400 0.180" size="0.120 0.750 0.180" quat="1 0 0 0"/>
-    <geom name="lower_stair_07" type="box" pos="2.160 7.400 0.210" size="0.120 0.750 0.210" quat="1 0 0 0"/>
-    <geom name="lower_stair_08" type="box" pos="2.400 7.400 0.240" size="0.120 0.750 0.240" quat="1 0 0 0"/>
-    <geom name="lower_stair_09" type="box" pos="2.640 7.400 0.270" size="0.120 0.750 0.270" quat="1 0 0 0"/>
-    <geom name="lower_stair_10" type="box" pos="2.880 7.400 0.300" size="0.120 0.750 0.300" quat="1 0 0 0"/>
-    <geom name="lower_stair_11" type="box" pos="3.120 7.400 0.330" size="0.120 0.750 0.330" quat="1 0 0 0"/>
-    <geom name="lower_stair_12" type="box" pos="3.360 7.400 0.360" size="0.120 0.750 0.360" quat="1 0 0 0"/>
+    <!-- Gentle staircase: 12 steps, tread=0.24 m, rise=0.08 m, total height=0.96 m -->
+    <geom name="gentle_stair_01" type="box" pos="0.720 4.000 0.040" size="0.120 0.750 0.040" quat="1 0 0 0"/>
+    <geom name="gentle_stair_02" type="box" pos="0.960 4.000 0.080" size="0.120 0.750 0.080" quat="1 0 0 0"/>
+    <geom name="gentle_stair_03" type="box" pos="1.200 4.000 0.120" size="0.120 0.750 0.120" quat="1 0 0 0"/>
+    <geom name="gentle_stair_04" type="box" pos="1.440 4.000 0.160" size="0.120 0.750 0.160" quat="1 0 0 0"/>
+    <geom name="gentle_stair_05" type="box" pos="1.680 4.000 0.200" size="0.120 0.750 0.200" quat="1 0 0 0"/>
+    <geom name="gentle_stair_06" type="box" pos="1.920 4.000 0.240" size="0.120 0.750 0.240" quat="1 0 0 0"/>
+    <geom name="gentle_stair_07" type="box" pos="2.160 4.000 0.280" size="0.120 0.750 0.280" quat="1 0 0 0"/>
+    <geom name="gentle_stair_08" type="box" pos="2.400 4.000 0.320" size="0.120 0.750 0.320" quat="1 0 0 0"/>
+    <geom name="gentle_stair_09" type="box" pos="2.640 4.000 0.360" size="0.120 0.750 0.360" quat="1 0 0 0"/>
+    <geom name="gentle_stair_10" type="box" pos="2.880 4.000 0.400" size="0.120 0.750 0.400" quat="1 0 0 0"/>
+    <geom name="gentle_stair_11" type="box" pos="3.120 4.000 0.440" size="0.120 0.750 0.440" quat="1 0 0 0"/>
+    <geom name="gentle_stair_12" type="box" pos="3.360 4.000 0.480" size="0.120 0.750 0.480" quat="1 0 0 0"/>
     <geom pos="-2.3004568480001155 5.230133099821309 -0.25" type="box" size="0.2667418434232123 0.23249216246593754 0.2715603840154582" quat="0.9937514109759715 -0.09011523303710722 0.04584049177774514 -0.04728665003473938"/>
     <geom pos="-2.3004568480001155 5.391515746812814 -0.25" type="box" size="0.2505265313539923 0.2412016313894627 0.2264599735410741" quat="0.9947855832976967 0.0430479213794962 0.004496328850963352 0.0923488102512985"/>
     <geom pos="-2.3004568480001155 5.632708194664771 -0.25" type="box" size="0.2744568938089314 0.24992449427731162 0.22801643019685697" quat="0.9927267717486197 0.07160131296835394 -0.005361370104009311 0.09663366051940456"/>

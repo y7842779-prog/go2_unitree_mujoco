@@ -1,0 +1,56 @@
+{
+  "xml_path": "/home/hyc/unitree_mujoco/unitree_robots/go2/scene_flat.xml",
+  "duration_s": 600.0,
+  "warmup_s": 2.0,
+  "command_interval_s": 10.0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "reference_controller": "DreamWaQ_AdaBoot",
+  "controllers": [
+    {
+      "name": "DreamWaQ_AdaBoot",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_5N_foce.pt"
+    },
+    {
+      "name": "DreamWaQ_CENet",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_cenet.pt"
+    }
+  ],
+  "summary": {
+    "DreamWaQ_AdaBoot": {
+      "mean_ate_total": 0.09621115326881409,
+      "std_ate_total": 0.0036531041276211453,
+      "mean_ate_vx": 0.09324242174625397,
+      "mean_ate_vy": 0.1062870517373085,
+      "mean_ate_yaw": 0.08910399824380874,
+      "num_runs": 5.0,
+      "num_falls": 0.0
+    },
+    "DreamWaQ_CENet": {
+      "mean_ate_total": 0.4949793115258217,
+      "std_ate_total": 0.8302273160273526,
+      "mean_ate_vx": 0.49271133840084075,
+      "mean_ate_vy": 0.4906113713979721,
+      "mean_ate_yaw": 0.501615259051323,
+      "num_runs": 5.0,
+      "num_falls": 2.0
+    }
+  },
+  "pairwise_t_tests": [
+    {
+      "reference_controller": "DreamWaQ_AdaBoot",
+      "other_controller": "DreamWaQ_CENet",
+      "metric_key": "ate_total",
+      "num_pairs": 5.0,
+      "t_statistic": 1.0734037763843687,
+      "p_value_one_sided": 0.17176568026115038,
+      "reference_mean": 0.09621115326881409,
+      "other_mean": 0.4949793115258217
+    }
+  ]
+}

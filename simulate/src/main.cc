@@ -25,10 +25,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <new>
+#include <system_error>
 #include <string>
 #include <thread>
 #include <vector>
@@ -108,6 +111,215 @@ namespace
   // control noise variables
   mjtNum *ctrlnoise = nullptr;
   pie_depth::PieDepthWriter pie_depth_writer;
+
+  class ParkourDepthWriter
+  {
+  public:
+    void Update(const mjModel* model, mjData* data)
+    {
+      if (param::config.enable_parkour_depth == 0 || model == nullptr || data == nullptr) {
+        return;
+      }
+
+      if (model != model_) {
+        Reset(model);
+      }
+      if (camera_id_ < 0) {
+        return;
+      }
+
+      const int update_steps = std::max(1, param::config.parkour_depth_update_steps);
+      if (++step_counter_ % update_steps != 0) {
+        return;
+      }
+
+      RenderRawDepth(model, data);
+      ProcessDepth();
+      WriteDepthFile();
+    }
+
+  private:
+    static constexpr int kRawWidth = 106;
+    static constexpr int kRawHeight = 60;
+    static constexpr int kCropLeft = 4;
+    static constexpr int kCropRight = 4;
+    static constexpr int kCropBottom = 2;
+    static constexpr int kCropWidth = kRawWidth - kCropLeft - kCropRight;
+    static constexpr int kCropHeight = kRawHeight - kCropBottom;
+    static constexpr int kOutputHeight = 87;
+    static constexpr int kOutputWidth = 58;
+    static constexpr float kMaxDistance = 2.0f;
+    static constexpr float kFocalLength = 11.041f;
+    static constexpr float kHorizontalAperture = 20.955f;
+    static constexpr float kCameraPitchDown = 0.34906585f;
+
+    void Reset(const mjModel* model)
+    {
+      model_ = model;
+      camera_id_ = mj_name2id(model, mjOBJ_CAMERA, "parkour_depth_camera");
+      base_body_id_ = mj_name2id(model, mjOBJ_BODY, "base_link");
+      step_counter_ = 0;
+      raw_depth_.assign(kRawWidth * kRawHeight, kMaxDistance);
+      processed_depth_.assign(kOutputWidth * kOutputHeight, 0.5f);
+      warned_write_failure_ = false;
+
+      if (camera_id_ < 0) {
+        std::cerr << "Parkour depth camera 'parkour_depth_camera' not found; depth output disabled for this model.\n";
+      } else if (base_body_id_ < 0) {
+        std::cerr << "Go2 base body 'base_link' not found; depth output disabled for this model.\n";
+        camera_id_ = -1;
+      } else {
+        std::cout << "Parkour depth output enabled: " << param::config.parkour_depth_binary_path
+                  << " [" << kOutputHeight << "x" << kOutputWidth << "]\n";
+      }
+    }
+
+    void RenderRawDepth(const mjModel* model, mjData* data)
+    {
+      const mjtNum* base_pos = data->xpos + 3 * base_body_id_;
+      const mjtNum* base_mat = data->xmat + 9 * base_body_id_;
+
+      const mjtNum camera_offset_body[3] = {0.33, 0.0, 0.08};
+      mjtNum camera_offset_world[3];
+      mju_mulMatVec3(camera_offset_world, base_mat, camera_offset_body);
+      mjtNum cam_pos[3] = {
+        base_pos[0] + camera_offset_world[0],
+        base_pos[1] + camera_offset_world[1],
+        base_pos[2] + camera_offset_world[2]
+      };
+
+      const mjtNum forward_body[3] = {
+        static_cast<mjtNum>(std::cos(kCameraPitchDown)),
+        0.0,
+        static_cast<mjtNum>(-std::sin(kCameraPitchDown))
+      };
+      const mjtNum right_body[3] = {0.0, -1.0, 0.0};
+
+      mjtNum forward_world[3];
+      mjtNum right_world[3];
+      mjtNum down_world[3];
+      mju_mulMatVec3(forward_world, base_mat, forward_body);
+      mju_mulMatVec3(right_world, base_mat, right_body);
+      mju_normalize3(forward_world);
+      mju_normalize3(right_world);
+      mju_cross(down_world, forward_world, right_world);
+      mju_normalize3(down_world);
+
+      const double fx = kRawWidth * kFocalLength / kHorizontalAperture;
+      const double fy = fx;
+      const double cx = 0.5 * (kRawWidth - 1);
+      const double cy = 0.5 * (kRawHeight - 1);
+
+      mjtByte geomgroup[6] = {1, 1, 1, 1, 1, 1};
+
+      for (int y = 0; y < kRawHeight; ++y) {
+        for (int x = 0; x < kRawWidth; ++x) {
+          const mjtNum local_dir[3] = {
+            static_cast<mjtNum>((x - cx) / fx),
+            static_cast<mjtNum>((y - cy) / fy),
+            static_cast<mjtNum>(1.0)
+          };
+
+          mjtNum world_dir[3] = {
+            local_dir[2] * forward_world[0] + local_dir[0] * right_world[0] + local_dir[1] * down_world[0],
+            local_dir[2] * forward_world[1] + local_dir[0] * right_world[1] + local_dir[1] * down_world[1],
+            local_dir[2] * forward_world[2] + local_dir[0] * right_world[2] + local_dir[1] * down_world[2]
+          };
+          mju_normalize3(world_dir);
+
+          int geom_id = -1;
+          const mjtNum distance = mj_ray(
+              model,
+              data,
+              cam_pos,
+              world_dir,
+              geomgroup,
+              1,
+              base_body_id_,
+              &geom_id);
+
+          float depth = kMaxDistance;
+          if (geom_id >= 0 && distance > 0.0) {
+            depth = static_cast<float>(std::min<mjtNum>(distance, kMaxDistance));
+          }
+          raw_depth_[y * kRawWidth + x] = depth;
+        }
+      }
+    }
+
+    float CroppedDepthAt(int y, int x) const
+    {
+      const int raw_y = std::clamp(y, 0, kCropHeight - 1);
+      const int raw_x = std::clamp(x + kCropLeft, 0, kRawWidth - 1);
+      return raw_depth_[raw_y * kRawWidth + raw_x];
+    }
+
+    void ProcessDepth()
+    {
+      for (int oy = 0; oy < kOutputHeight; ++oy) {
+        const float src_y = (oy + 0.5f) * kCropHeight / kOutputHeight - 0.5f;
+        const int y0 = static_cast<int>(std::floor(src_y));
+        const int y1 = y0 + 1;
+        const float wy = src_y - y0;
+
+        for (int ox = 0; ox < kOutputWidth; ++ox) {
+          const float src_x = (ox + 0.5f) * kCropWidth / kOutputWidth - 0.5f;
+          const int x0 = static_cast<int>(std::floor(src_x));
+          const int x1 = x0 + 1;
+          const float wx = src_x - x0;
+
+          const float d00 = CroppedDepthAt(y0, x0);
+          const float d01 = CroppedDepthAt(y0, x1);
+          const float d10 = CroppedDepthAt(y1, x0);
+          const float d11 = CroppedDepthAt(y1, x1);
+          const float top = d00 * (1.0f - wx) + d01 * wx;
+          const float bottom = d10 * (1.0f - wx) + d11 * wx;
+          const float depth = std::clamp(top * (1.0f - wy) + bottom * wy, 0.0f, kMaxDistance);
+          processed_depth_[oy * kOutputWidth + ox] = depth / kMaxDistance - 0.5f;
+        }
+      }
+    }
+
+    void WriteDepthFile()
+    {
+      const std::filesystem::path output_path(param::config.parkour_depth_binary_path);
+      const auto tmp_path = output_path.string() + ".tmp";
+
+      std::ofstream file(tmp_path, std::ios::binary | std::ios::trunc);
+      if (!file.is_open()) {
+        WarnWriteFailure("failed to open temp depth file");
+        return;
+      }
+      file.write(
+          reinterpret_cast<const char*>(processed_depth_.data()),
+          static_cast<std::streamsize>(processed_depth_.size() * sizeof(float)));
+      file.close();
+
+      std::error_code ec;
+      std::filesystem::rename(tmp_path, output_path, ec);
+      if (ec) {
+        WarnWriteFailure("failed to publish depth file: " + ec.message());
+      }
+    }
+
+    void WarnWriteFailure(const std::string& message)
+    {
+      if (!warned_write_failure_) {
+        std::cerr << "Parkour depth output: " << message << "\n";
+        warned_write_failure_ = true;
+      }
+    }
+
+    const mjModel* model_ = nullptr;
+    int camera_id_ = -1;
+    int base_body_id_ = -1;
+    int step_counter_ = 0;
+    bool warned_write_failure_ = false;
+    std::vector<float> raw_depth_;
+    std::vector<float> processed_depth_;
+  };
+
+  ParkourDepthWriter parkour_depth_writer;
 
   using Seconds = std::chrono::duration<double>;
 
@@ -527,6 +739,7 @@ namespace
             if (stepped)
             {
               sim.AddToHistory();
+              parkour_depth_writer.Update(m, d);
               pie_depth_writer.Update(m, d);
             }
           }

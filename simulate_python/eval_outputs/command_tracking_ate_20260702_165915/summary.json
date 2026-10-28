@@ -1,0 +1,79 @@
+{
+  "xml_path": "/home/hyc/unitree_mujoco/unitree_robots/go2/scene_flat.xml",
+  "duration_s": 600.0,
+  "warmup_s": 2.0,
+  "command_interval_s": 10.0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "reference_controller": "PolicyPPO",
+  "controllers": [
+    {
+      "name": "PolicyPPO",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_ppo.pt"
+    },
+    {
+      "name": "DreamWaQ_AdaBoot",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_5N_foce.pt"
+    },
+    {
+      "name": "DreamWaQ_CENet",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_cenet.pt"
+    }
+  ],
+  "summary": {
+    "PolicyPPO": {
+      "mean_ate_total": 0.15227971524000167,
+      "std_ate_total": 0.18793203101573044,
+      "mean_ate_vx": 0.12940221950411795,
+      "mean_ate_vy": 0.1377930223941803,
+      "mean_ate_yaw": 0.18964390456676483,
+      "num_runs": 5.0,
+      "num_falls": 1.0
+    },
+    "DreamWaQ_AdaBoot": {
+      "mean_ate_total": 0.0738175317645073,
+      "std_ate_total": 0.002546318710916614,
+      "mean_ate_vx": 0.07523473650217057,
+      "mean_ate_vy": 0.06880849972367287,
+      "mean_ate_yaw": 0.07740936428308487,
+      "num_runs": 5.0,
+      "num_falls": 0.0
+    },
+    "DreamWaQ_CENet": {
+      "mean_ate_total": 0.052316883206367494,
+      "std_ate_total": 0.0014942091957046676,
+      "mean_ate_vx": 0.04439426064491272,
+      "mean_ate_vy": 0.046708790212869646,
+      "mean_ate_yaw": 0.06584759950637817,
+      "num_runs": 5.0,
+      "num_falls": 0.0
+    }
+  },
+  "pairwise_t_tests": [
+    {
+      "reference_controller": "PolicyPPO",
+      "other_controller": "DreamWaQ_AdaBoot",
+      "metric_key": "ate_total",
+      "num_pairs": 5.0,
+      "t_statistic": -0.9453032921494787,
+      "p_value_one_sided": 0.8009848746754791,
+      "reference_mean": 0.15227971524000167,
+      "other_mean": 0.0738175317645073
+    },
+    {
+      "reference_controller": "PolicyPPO",
+      "other_controller": "DreamWaQ_CENet",
+      "metric_key": "ate_total",
+      "num_pairs": 5.0,
+      "t_statistic": -1.1957508653308768,
+      "p_value_one_sided": 0.8510838426780022,
+      "reference_mean": 0.15227971524000167,
+      "other_mean": 0.052316883206367494
+    }
+  ]
+}

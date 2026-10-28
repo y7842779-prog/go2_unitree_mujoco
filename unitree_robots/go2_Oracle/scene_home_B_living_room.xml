@@ -1,0 +1,68 @@
+<mujoco model="go2 scene">
+  <include file="go2.xml" />
+
+  <statistic center="0 0 0.1" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="-130" elevation="-20" />
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+  <hfield name="perlin_hfield" size="1.0 0.75 0.2 0.2" file="../height_field.png" /><hfield name="image_hfield" size="1.0 1.0 0.02 0.1" file="../unitree_hfield.png" /></asset>
+
+  <worldbody>
+    <light pos="0 0 2.4" dir="0 0 -1" directional="true" />
+    <light pos="2.5 1.5 2.1" dir="-1 -1 -1" directional="false" diffuse="0.55 0.55 0.55" />
+
+    <!-- ===================================================== -->
+    <!-- Scene B: 客厅绕行型家居递送场景                         -->
+    <!-- 特点：开放客厅、沙发茶几、L形绕行、玩具/电线扰动          -->
+    <!-- 用途：验证策略在开放空间家具绕行和低矮障碍下的鲁棒性     -->
+    <!-- ===================================================== -->
+
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" friction="0.90 0.01 0.001" />
+
+    <!-- 开放客厅边界，和 Scene A 的长走廊明显不同 -->
+    <geom name="living_wall_back" type="box" pos="3.0 2.40 0.48" size="3.20 0.05 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+    <geom name="living_wall_left" type="box" pos="-0.15 0.25 0.48" size="0.05 2.15 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+    <geom name="living_wall_right" type="box" pos="6.15 0.25 0.48" size="0.05 2.15 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+
+    <!-- 大地毯在客厅中心 -->
+    <geom name="living_big_carpet" type="box" pos="2.65 0.10 0.012" size="1.50 1.05 0.012" rgba="0.58 0.42 0.62 1" friction="1.18 0.03 0.003" contype="1" conaffinity="1" />
+    <geom name="living_carpet_roll" type="capsule" pos="1.30 0.95 0.030" euler="1.5708 0 1.5708" size="0.020 0.45" rgba="0.50 0.36 0.55 1" friction="1.10 0.03 0.003" contype="1" conaffinity="1" />
+
+    <!-- 沙发和茶几构成 L 形绕行 -->
+    <geom name="sofa_long" type="box" pos="2.35 1.55 0.25" size="0.95 0.28 0.25" rgba="0.42 0.37 0.34 1" contype="1" conaffinity="1" />
+    <geom name="sofa_side" type="box" pos="1.55 0.95 0.25" size="0.28 0.65 0.25" rgba="0.42 0.37 0.34 1" contype="1" conaffinity="1" />
+    <geom name="coffee_table_B" type="box" pos="2.80 0.55 0.16" size="0.45 0.28 0.16" rgba="0.50 0.42 0.35 1" contype="1" conaffinity="1" />
+    <geom name="small_stool" type="cylinder" pos="3.60 1.25 0.18" size="0.18 0.18" rgba="0.55 0.45 0.35 1" contype="1" conaffinity="1" />
+
+    <!-- 电线和玩具散落 -->
+    <geom name="charging_cable_B" type="capsule" pos="2.55 -0.75 0.018" euler="1.5708 0 -0.3" size="0.018 0.65" rgba="0.05 0.05 0.05 1" friction="0.70 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="toy_B1" type="box" pos="1.45 -0.55 0.065" euler="0 0 0.35" size="0.11 0.10 0.065" rgba="0.90 0.45 0.35 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="toy_B2" type="box" pos="3.60 -0.35 0.070" euler="0 0 -0.2" size="0.13 0.11 0.070" rgba="0.30 0.50 0.90 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="book_B" type="box" pos="4.05 0.45 0.050" euler="0 0 0.3" size="0.30 0.19 0.050" rgba="0.40 0.40 0.75 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+
+    <!-- 客厅出口到卧室的小门槛 -->
+    <geom name="threshold_B" type="box" pos="4.35 -0.20 0.025" size="0.55 0.06 0.025" rgba="0.55 0.35 0.18 1" friction="0.95 0.02 0.001" contype="1" conaffinity="1" />
+
+    <!-- 目标区在右后方，形成绕行路径 -->
+    <geom name="bed_B" type="box" pos="5.25 -0.95 0.28" size="0.72 0.48 0.28" rgba="0.60 0.50 0.42 1" contype="1" conaffinity="1" />
+    <geom name="bedside_B" type="box" pos="4.65 -1.35 0.34" size="0.28 0.26 0.34" rgba="0.50 0.42 0.35 1" contype="1" conaffinity="1" />
+    <geom name="target_B" type="cylinder" pos="4.65 -1.35 0.70" size="0.14 0.02" rgba="0.20 0.80 0.25 1" contype="0" conaffinity="0" />
+    <geom name="cup_B" type="cylinder" pos="4.65 -1.35 0.80" size="0.050 0.09" rgba="0.25 0.55 0.95 0.55" contype="0" conaffinity="0" />
+
+    <!-- 宠物占位 -->
+    <geom name="pet_B" type="cylinder" pos="4.20 1.20 0.15" size="0.16 0.15" rgba="0.95 0.45 0.35 1" friction="0.60 0.02 0.001" contype="1" conaffinity="1" />
+
+    <site name="start_B" pos="0.00 0.00 0.05" size="0.08" rgba="0.20 0.40 1.00 1" />
+    <site name="mid_B1" pos="2.20 -0.70 0.05" size="0.06" rgba="1.00 0.80 0.20 1" />
+    <site name="mid_B2" pos="4.35 -0.20 0.05" size="0.06" rgba="1.00 0.80 0.20 1" />
+    <site name="goal_B" pos="4.65 -1.35 0.08" size="0.10" rgba="0.20 1.00 0.20 1" />
+  </worldbody>
+</mujoco>

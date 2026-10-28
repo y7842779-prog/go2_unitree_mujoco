@@ -1,0 +1,10 @@
+sample_type,controller,axis,num_samples,min,q1,median,q3,max,mean
+instant_time_step_errors_no_fall_penalty,PolicyPPO,ate_vx,35278,0.00000012,0.01729021,0.03482974,0.05898376,1.77114773,0.05589586
+instant_time_step_errors_no_fall_penalty,PolicyPPO,ate_vy,35278,0.00000334,0.02740453,0.05269139,0.08914089,1.62983871,0.07734196
+instant_time_step_errors_no_fall_penalty,PolicyPPO,ate_yaw,35278,0.00000036,0.04799059,0.10807237,0.19734053,3.97153878,0.14028323
+instant_time_step_errors_no_fall_penalty,DreamWaQ_AdaBoot,ate_vx,150000,0.00000203,0.03829798,0.07719506,0.12089423,1.84359384,0.09324244
+instant_time_step_errors_no_fall_penalty,DreamWaQ_AdaBoot,ate_vy,150000,0.00000012,0.04548050,0.08688936,0.13834913,1.64323902,0.10628716
+instant_time_step_errors_no_fall_penalty,DreamWaQ_AdaBoot,ate_yaw,150000,0.00000089,0.03308235,0.06792460,0.12345329,2.30299783,0.08910389
+instant_time_step_errors_no_fall_penalty,DreamWaQ_CENet,ate_vx,117526,0.00000034,0.02822758,0.05722337,0.09102558,1.75822628,0.07622748
+instant_time_step_errors_no_fall_penalty,DreamWaQ_CENet,ate_vy,117526,0.00000002,0.02689491,0.05414897,0.09011099,1.77964783,0.07354705
+instant_time_step_errors_no_fall_penalty,DreamWaQ_CENet,ate_yaw,117526,0.00000009,0.03118446,0.06775281,0.12023634,4.58453512,0.08759146

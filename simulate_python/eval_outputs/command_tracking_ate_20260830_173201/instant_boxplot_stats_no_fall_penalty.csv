@@ -1,0 +1,7 @@
+sample_type,controller,axis,num_samples,min,q1,median,q3,max,mean
+instant_time_step_errors_no_fall_penalty,PolicyPPO,ate_vx,269,0.00152016,0.27017561,0.48283082,0.88555646,1.79409456,0.56471311
+instant_time_step_errors_no_fall_penalty,PolicyPPO,ate_vy,269,0.00407873,0.23922727,0.43335384,0.62474680,1.95955157,0.49132894
+instant_time_step_errors_no_fall_penalty,PolicyPPO,ate_yaw,269,0.01799721,0.58387619,0.89410025,1.25059640,4.69192743,1.09818713
+instant_time_step_errors_no_fall_penalty,DreamWaQ_CENet,ate_vx,15000,0.00000158,0.02089672,0.03786678,0.05936435,1.71643305,0.05810641
+instant_time_step_errors_no_fall_penalty,DreamWaQ_CENet,ate_vy,15000,0.00000435,0.04611391,0.07942459,0.11200462,1.50216877,0.09371557
+instant_time_step_errors_no_fall_penalty,DreamWaQ_CENet,ate_yaw,15000,0.00003234,0.03316377,0.06869102,0.12089298,1.66935039,0.09009106

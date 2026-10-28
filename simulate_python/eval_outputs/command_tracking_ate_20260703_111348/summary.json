@@ -1,0 +1,79 @@
+{
+  "xml_path": "/home/hyc/unitree_mujoco/unitree_robots/go2/scene_flat.xml",
+  "duration_s": 600.0,
+  "warmup_s": 2.0,
+  "command_interval_s": 10.0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "reference_controller": "PolicyPPO",
+  "controllers": [
+    {
+      "name": "PolicyPPO",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_ppo.pt"
+    },
+    {
+      "name": "DreamWaQ_AdaBoot",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_5N_foce.pt"
+    },
+    {
+      "name": "DreamWaQ_CENet",
+      "policy_path": "/home/hyc/unitree_mujoco/simulate_python/DreamWaQ_models/policy_cenet.pt"
+    }
+  ],
+  "summary": {
+    "PolicyPPO": {
+      "mean_ate_total": 1.5510695457458497,
+      "std_ate_total": 0.3844667763609828,
+      "mean_ate_vx": 1.5427726745605468,
+      "mean_ate_vy": 1.54781653881073,
+      "mean_ate_yaw": 1.562619423866272,
+      "num_runs": 5.0,
+      "num_falls": 5.0
+    },
+    "DreamWaQ_AdaBoot": {
+      "mean_ate_total": 0.09621115326881409,
+      "std_ate_total": 0.0036531041276211453,
+      "mean_ate_vx": 0.09324242174625397,
+      "mean_ate_vy": 0.1062870517373085,
+      "mean_ate_yaw": 0.08910399824380874,
+      "num_runs": 5.0,
+      "num_falls": 0.0
+    },
+    "DreamWaQ_CENet": {
+      "mean_ate_total": 0.4949793115258217,
+      "std_ate_total": 0.8302273160273526,
+      "mean_ate_vx": 0.49271133840084075,
+      "mean_ate_vy": 0.4906113713979721,
+      "mean_ate_yaw": 0.501615259051323,
+      "num_runs": 5.0,
+      "num_falls": 2.0
+    }
+  },
+  "pairwise_t_tests": [
+    {
+      "reference_controller": "PolicyPPO",
+      "other_controller": "DreamWaQ_AdaBoot",
+      "metric_key": "ate_total",
+      "num_pairs": 5.0,
+      "t_statistic": -8.44900874852628,
+      "p_value_one_sided": 0.9994624852378396,
+      "reference_mean": 1.5510695457458497,
+      "other_mean": 0.09621115326881409
+    },
+    {
+      "reference_controller": "PolicyPPO",
+      "other_controller": "DreamWaQ_CENet",
+      "metric_key": "ate_total",
+      "num_pairs": 5.0,
+      "t_statistic": -3.410635293707117,
+      "p_value_one_sided": 0.9864941952253042,
+      "reference_mean": 1.5510695457458497,
+      "other_mean": 0.4949793115258217
+    }
+  ]
+}

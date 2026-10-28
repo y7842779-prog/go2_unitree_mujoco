@@ -1,0 +1,56 @@
+{
+  "xml_path": "/home/hyc/unitree_mujoco/unitree_robots/go2/scene_flat.xml",
+  "duration_s": 60.0,
+  "warmup_s": 2.0,
+  "command_interval_s": 10.0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "reference_controller": "PolicyPPO",
+  "controllers": [
+    {
+      "name": "PolicyPPO",
+      "policy_path": "/home/hyc/unitree_rl_lab/scripts/rsl_rl/logs/rsl_rl/unitree_go2_ppo_dr_rough_curriculum/2026-07-20_11-50-26/exported/policy.pt"
+    },
+    {
+      "name": "DreamWaQ_CENet",
+      "policy_path": "/home/hyc/unitree_rl_lab/scripts/rsl_rl/logs/rsl_rl/unitree_go2_dreamwaq_cenet/2026-07-26_18-34-42/exported/policy.pt"
+    }
+  ],
+  "summary": {
+    "PolicyPPO": {
+      "mean_ate_total": 1.9770107746124268,
+      "std_ate_total": 0.005480016012662776,
+      "mean_ate_vx": 1.9742605209350585,
+      "mean_ate_vy": 1.9729444980621338,
+      "mean_ate_yaw": 1.983827495574951,
+      "num_runs": 5.0,
+      "num_falls": 5.0
+    },
+    "DreamWaQ_CENet": {
+      "mean_ate_total": 0.08063765615224838,
+      "std_ate_total": 0.008113232195204155,
+      "mean_ate_vx": 0.058106371015310285,
+      "mean_ate_vy": 0.09371552765369415,
+      "mean_ate_yaw": 0.0900910660624504,
+      "num_runs": 5.0,
+      "num_falls": 0.0
+    }
+  },
+  "pairwise_t_tests": [
+    {
+      "reference_controller": "PolicyPPO",
+      "other_controller": "DreamWaQ_CENet",
+      "metric_key": "ate_total",
+      "num_pairs": 5.0,
+      "t_statistic": -344.7376108562022,
+      "p_value_one_sided": 0.999999999787606,
+      "reference_mean": 1.9770107746124268,
+      "other_mean": 0.08063765615224838
+    }
+  ]
+}

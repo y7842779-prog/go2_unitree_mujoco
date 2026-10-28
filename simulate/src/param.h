@@ -25,6 +25,10 @@ inline struct SimulationConfig
 
     int enable_elastic_band;
     int band_attached_link = 0;
+
+    int enable_parkour_depth = 0;
+    std::string parkour_depth_binary_path = "/tmp/parkour_depth_image_float32.bin";
+    int parkour_depth_update_steps = 10;
     int enable_pie_depth = 0;
     std::string pie_depth_binary_path = "/tmp/pie_depth_60x86_float32.bin";
     int pie_depth_update_steps = 50;
@@ -44,6 +48,15 @@ inline struct SimulationConfig
             joystick_bits = cfg["joystick_bits"].as<int>();
             print_scene_information = cfg["print_scene_information"].as<int>();
             enable_elastic_band = cfg["enable_elastic_band"].as<int>();
+            if (cfg["enable_parkour_depth"]) {
+                enable_parkour_depth = cfg["enable_parkour_depth"].as<int>();
+            }
+            if (cfg["parkour_depth_binary_path"]) {
+                parkour_depth_binary_path = cfg["parkour_depth_binary_path"].as<std::string>();
+            }
+            if (cfg["parkour_depth_update_steps"]) {
+                parkour_depth_update_steps = cfg["parkour_depth_update_steps"].as<int>();
+            }
             if (cfg["enable_pie_depth"]) {
                 enable_pie_depth = cfg["enable_pie_depth"].as<int>();
             }

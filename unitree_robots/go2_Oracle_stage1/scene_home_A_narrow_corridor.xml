@@ -1,0 +1,65 @@
+<mujoco model="go2 scene">
+  <include file="go2.xml" />
+
+  <statistic center="0 0 0.1" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="-130" elevation="-20" />
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+  <hfield name="perlin_hfield" size="1.0 0.75 0.2 0.2" file="../height_field.png" /><hfield name="image_hfield" size="1.0 1.0 0.02 0.1" file="../unitree_hfield.png" /></asset>
+
+  <worldbody>
+    <light pos="0 0 2.2" dir="0 0 -1" directional="true" />
+    <light pos="3.5 -1.5 2.0" dir="-1 0 -1" directional="false" diffuse="0.5 0.5 0.5" />
+
+    <!-- ===================================================== -->
+    <!-- Scene A: 狭窄走廊型家居递送场景                         -->
+    <!-- 特点：长走廊、连续门槛、窄通道、鞋柜/杂物靠边             -->
+    <!-- 用途：验证策略在狭窄空间和低矮地形扰动下的导航执行鲁棒性 -->
+    <!-- ===================================================== -->
+
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" friction="0.90 0.01 0.001" />
+
+    <!-- 走廊墙体：明显长条通道，出生点在 (0,0)，两侧墙避开中心 -->
+    <geom name="corridor_wall_left" type="box" pos="3.1 0.95 0.48" size="3.2 0.05 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+    <geom name="corridor_wall_right" type="box" pos="3.1 -0.95 0.48" size="3.2 0.05 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+    <geom name="corridor_end_wall" type="box" pos="6.2 0.0 0.48" size="0.05 0.95 0.48" rgba="0.82 0.82 0.78 1" contype="1" conaffinity="1" />
+
+    <!-- 门框和连续门槛 -->
+    <geom name="door_frame_A_left" type="box" pos="1.00 0.78 0.55" size="0.06 0.13 0.55" rgba="0.55 0.40 0.25 1" contype="1" conaffinity="1" />
+    <geom name="door_frame_A_right" type="box" pos="1.00 -0.78 0.55" size="0.06 0.13 0.55" rgba="0.55 0.40 0.25 1" contype="1" conaffinity="1" />
+    <geom name="threshold_A1" type="box" pos="1.15 0.00 0.022" size="0.60 0.06 0.022" rgba="0.55 0.35 0.18 1" friction="0.95 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="threshold_A2" type="box" pos="3.40 0.00 0.030" size="0.55 0.055 0.030" rgba="0.55 0.35 0.18 1" friction="0.95 0.02 0.001" contype="1" conaffinity="1" />
+
+    <!-- 长条地毯，明显区别于其他场景 -->
+    <geom name="long_runner_carpet" type="box" pos="2.25 0.00 0.012" size="1.25 0.42 0.012" rgba="0.42 0.60 0.58 1" friction="1.25 0.03 0.003" contype="1" conaffinity="1" />
+    <geom name="runner_carpet_roll" type="capsule" pos="2.90 -0.42 0.030" euler="1.5708 0 0" size="0.020 0.52" rgba="0.34 0.52 0.50 1" friction="1.10 0.03 0.003" contype="1" conaffinity="1" />
+
+    <!-- 靠边鞋柜/鞋子/快递箱，形成狭窄通行感 -->
+    <geom name="shoe_cabinet" type="box" pos="2.05 0.70 0.32" size="0.48 0.18 0.32" rgba="0.50 0.38 0.25 1" contype="1" conaffinity="1" />
+    <geom name="shoe_1" type="box" pos="1.55 -0.58 0.030" euler="0 0 -0.4" size="0.20 0.08 0.030" rgba="0.85 0.65 0.35 1" friction="0.80 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="shoe_2" type="box" pos="2.65 -0.62 0.030" euler="0 0 0.25" size="0.20 0.08 0.030" rgba="0.85 0.65 0.35 1" friction="0.80 0.02 0.001" contype="1" conaffinity="1" />
+    <geom name="package_box" type="box" pos="3.95 0.58 0.13" euler="0 0 0.2" size="0.22 0.18 0.13" rgba="0.70 0.48 0.28 1" friction="0.75 0.02 0.001" contype="1" conaffinity="1" />
+
+    <!-- 床边递送目标在走廊末端右侧 -->
+    <geom name="bed_A" type="box" pos="5.30 -0.45 0.28" size="0.62 0.38 0.28" rgba="0.60 0.50 0.42 1" contype="1" conaffinity="1" />
+    <geom name="bedside_A" type="box" pos="5.05 0.55 0.33" size="0.28 0.26 0.33" rgba="0.50 0.42 0.35 1" contype="1" conaffinity="1" />
+    <geom name="target_A" type="cylinder" pos="5.05 0.55 0.69" size="0.14 0.02" rgba="0.20 0.80 0.25 1" contype="0" conaffinity="0" />
+    <geom name="cup_A" type="cylinder" pos="5.05 0.55 0.79" size="0.050 0.09" rgba="0.25 0.55 0.95 0.55" contype="0" conaffinity="0" />
+
+    <!-- 宠物占位，不加 joint，避免改变控制代码索引 -->
+    <geom name="pet_A" type="cylinder" pos="4.45 -0.70 0.15" size="0.16 0.15" rgba="0.95 0.45 0.35 1" friction="0.60 0.02 0.001" contype="1" conaffinity="1" />
+
+    <site name="start_A" pos="0.00 0.00 0.05" size="0.08" rgba="0.20 0.40 1.00 1" />
+    <site name="mid_A1" pos="1.15 0.00 0.05" size="0.06" rgba="1.00 0.80 0.20 1" />
+    <site name="mid_A2" pos="3.40 0.00 0.05" size="0.06" rgba="1.00 0.80 0.20 1" />
+    <site name="goal_A" pos="5.05 0.55 0.08" size="0.10" rgba="0.20 1.00 0.20 1" />
+  </worldbody>
+</mujoco>
